@@ -2,9 +2,10 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 CLASSES = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
+CLASSES_2 = ['classA']
 FEATURES = ['sepal length (in cm)', 'sepal width (in cm)', 'petal length (in cm)', 'petal width (in cm)']
 
-def readFile(filename, classes = CLASSES) -> tuple:
+def readFile(filename, classes = None) -> tuple:
     """
     Lit le fichier contenant les données IRIS
 

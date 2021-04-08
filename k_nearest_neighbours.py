@@ -190,7 +190,7 @@ class KNearestNeighbours:
             return sum(y_train) / len(y_train)
 
     def predict(self, x_test):
-        if x_test is not np.ndarray:
+        if type(x_test) != np.ndarray:
             raise TypeError('x_test must be a numpy array')
         nbFeature = len(self.tree.value) if self.algo == Algo.KD_TREE else self.x_train.shape[1]
         if x_test.shape[1] != nbFeature:
