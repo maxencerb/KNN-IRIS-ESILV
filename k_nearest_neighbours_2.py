@@ -53,7 +53,7 @@ class KNearestNeighbours:
     """
 
     @staticmethod
-    def fit(x_train, y_train, k_neighbours, algo: Algo = Algo.BRUTE, leaf_size = 20):
+    def fit(x_train, y_train, k_neighbours, algo: Algo = Algo.BRUTE, leaf_size = 20, distance_penalty = 2):
         """
         fit the k-nn algorithm
 
@@ -92,10 +92,12 @@ class KNearestNeighbours:
         if k_neighbours > len(y_train):
             raise ValueError('k must be less than the total number of training values')
 
-        return KNearestNeighbours(x_train, y_train, k_neighbours, algo, leaf_size)
+        return KNearestNeighbours(x_train, y_train, k_neighbours, algo, leaf_size, distance_penalty)
 
-    def __init__(self, x_train, y_train, k_neighbours, algo, leaf_size) -> None:
+    def __init__(self, x_train, y_train, k_neighbours, algo, leaf_size, distance_penalty) -> None:
         self.algo: Algo = algo
+        self.nb_class: int = len(set(y_train))
+        self.distance_penalty: float = distance_penalty
         if algo == Algo.BRUTE:
             self.x_train = x_train
             self.y_train = y_train
@@ -169,6 +171,43 @@ class KNearestNeighbours:
 
     def __predict_point(self, point):
         # default values
+        x_train = None
+        y_train = None
+        #get values for kd_tree algo
+        if self.algo == Algo.KD_TREE:
+            # Search for the corresponding leaf node to the point
+            node: Node = self.tree
+            col = 0
+            while not node.isLeaf:
+                index = self.index_var[col % len(self.index_var)]
+                node = node.left if node.value[index] > point[index] else node.right
+                col += 1
+            x_train = node.value
+            y_train = node.label
+        elif self.algo == Algo.BRUTE:
+            x_train = self.x_train
+            y_train = self.y_train
+        # order by distance
+        distances = self.__get_distance(point, x_train)
+        order = np.argsort(distances)
+        y_train = y_train[order][:self.k_neighbours]
+        prediction = np.zeros(self.nb_class)
+        penalty = 1 / (distances ** self.distance_penalty)
+        for i in range(len(y_train)):
+            prediction[y_train[i]] = prediction[y_train[i]] + penalty[i]
+        # mean value of the k nearest neighbours (same weight)
+        return np.argmax(prediction)
+
+    def predict(self, x_test):
+        if type(x_test) != np.ndarray:
+            raise TypeError('x_test must be a numpy array')
+        nbFeature = len(self.tree.value) if self.algo == Algo.KD_TREE else self.x_train.shape[1]
+        if x_test.shape[1] != nbFeature:
+            raise ValueError('The x_test must have the same number of features given by the training examples array')
+        return np.array([self.__predict_point(point) for point in x_test])
+
+def __predict_point(self, point):
+        # default values
         x_train = self.x_train
         y_train = self.y_train
         #get values for kd_tree algo
@@ -187,11 +226,3 @@ class KNearestNeighbours:
         y_train = y_train[order][:self.k_neighbours]
         # mean value of the k nearest neighbours (same weight)
         return np.argmax(np.bincount(y_train))
-
-    def predict(self, x_test):
-        if type(x_test) != np.ndarray:
-            raise TypeError('x_test must be a numpy array')
-        nbFeature = len(self.tree.value) if self.algo == Algo.KD_TREE else self.x_train.shape[1]
-        if x_test.shape[1] != nbFeature:
-            raise ValueError('The x_test must have the same number of features given by the training examples array')
-        return np.array([self.__predict_point(point) for point in x_test])

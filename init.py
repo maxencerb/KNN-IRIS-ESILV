@@ -63,7 +63,7 @@ def split_dataset(data, output, test_size = .2) -> tuple:
     return x_train, y_train, x_test, y_test
 
 def error(y_true, y_pred):
-    return sum((y_true - y_pred) ** 2) ** 1/2
+    return sum(y_true != y_pred)
 
 
 def reduce(x: np.ndarray) -> np.ndarray:
