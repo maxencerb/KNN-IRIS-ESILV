@@ -189,8 +189,9 @@ class KNearestNeighbours:
         return np.argmax(np.bincount(y_train))
 
     def predict(self, x_test):
+        if type(x_test) == list: x_test = np.array(x_test)
         if type(x_test) != np.ndarray:
-            raise TypeError('x_test must be a numpy array')
+            raise TypeError('x_test must be a list or numpy array')
         nbFeature = len(self.tree.value) if self.algo == Algo.KD_TREE else self.x_train.shape[1]
         if x_test.shape[1] != nbFeature:
             raise ValueError('The x_test must have the same number of features given by the training examples array')
