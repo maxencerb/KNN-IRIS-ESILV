@@ -186,10 +186,17 @@ class KNearestNeighbours:
             x_train = node.value
             y_train = node.label
         # order by distance
-        order = np.argsort(self.__get_distance(point, x_train))
+        distance = self.__get_distance(point, x_train)
+        order = np.argsort(distance)
         y_train = y_train[order][:self.k_neighbours]
+        distance = distance[order][:self.k_neighbours]
         # mean value of the k nearest neighbours (same weight)
-        return np.argmax(np.bincount(y_train))
+        # return np.argmax(np.bincount(y_train))
+        # Try to give different weights according to distance
+        class_choice = np.zeros(5) # nombre de classes
+        for i in range(len(y_train)):
+            class_choice[y_train[i]] += 1/distance[i]
+        return np.argmax(class_choice)
 
     def predict(self, x_test):
         if type(x_test) == list: x_test = np.array(x_test)
