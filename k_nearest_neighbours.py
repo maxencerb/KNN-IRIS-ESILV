@@ -169,8 +169,11 @@ class KNearestNeighbours:
 
     def __predict_point(self, point):
         # default values
-        x_train = self.x_train
-        y_train = self.y_train
+        x_train = None
+        y_train = None
+        if self.algo == Algo.BRUTE:
+            x_train = self.x_train
+            y_train = self.y_train
         #get values for kd_tree algo
         if self.algo == Algo.KD_TREE:
             # Search for the corresponding leaf node to the point
