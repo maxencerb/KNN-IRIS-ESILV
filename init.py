@@ -5,15 +5,17 @@ CLASSES = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
 CLASSES_2 = ['classA']
 FEATURES = ['sepal length (in cm)', 'sepal width (in cm)', 'petal length (in cm)', 'petal width (in cm)']
 
-def readFile(filename, classes = None) -> tuple:
+def readFile(filename, classes = None, skip_output = False) -> tuple:
     """
     Lit le fichier contenant les données IRIS
 
     Arguments
     ---------
-    filename:  chemin vers le fichier
+    filename:     chemin vers le fichier
 
-    classes:   Liste contenant les différents labels
+    classes:      Liste contenant les différents labels
+
+    skip_output:  Ne prend pas en compte la dernière colonne comme output si True
 
     Return
     ------
@@ -28,8 +30,11 @@ def readFile(filename, classes = None) -> tuple:
     for line in f.readlines():
         line = line[:-1]
         val = line.split(',')
-        data.append(list(map(float, val[:-1])))
-        output.append(classes.index(val[-1]))
+        if skip_output:
+            data.append(list(map(float, val)))
+        else:
+            data.append(list(map(float, val[:-1])))
+            output.append(classes.index(val[-1]))
     return np.array(data), np.array(output)
 
 def split_dataset(data, output, test_size = .2) -> tuple:
@@ -164,3 +169,11 @@ def plot_confusion_matrix(cm,
     plt.xlabel('Predicted label\naccuracy={:0.4f}; misclass={:0.4f}'.format(accuracy, misclass))
     plt.show()
 
+def saveResults(filename, results, CLASSES):
+    if min(results) < 0 or max(results) >= len(CLASSES):
+        raise ValueError('values must be index between 0 and the number of classes (excluded)')
+    results = list(map(lambda x: CLASSES[x], results))
+    line = '\n'.join(results)
+    f = open(filename, 'w')
+    f.write(line)
+    f.close()
