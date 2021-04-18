@@ -87,8 +87,8 @@ def reduce(x: np.ndarray) -> np.ndarray:
     ```
     """
     mean = x.mean(axis=0)
-    var = x.var(axis=0)
-    return (x - mean) / var
+    std = x.std(axis=0)
+    return (x - mean) / std
 
 
 def plot_confusion_matrix(cm,
